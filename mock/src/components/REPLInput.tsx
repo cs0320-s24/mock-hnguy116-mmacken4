@@ -1,11 +1,15 @@
+import { Dispatch, SetStateAction, useState} from "react";
 import "../styles/main.css";
-import { Dispatch, SetStateAction, useState } from "react";
 import { ControlledInput } from "./ControlledInput";
 
 interface REPLInputProps {
   // TODO: Fill this with desired props... Maybe something to keep track of the submitted commands
   history: string[]; //push every command into this history array
   setHistory: Dispatch<SetStateAction<string[]>>; //use it to maintain state of list
+  //brief: boolean;
+  //setBrief: Dispatch<SetStateAction<boolean>>;
+  verbose: boolean;
+  setVerbose: Dispatch<SetStateAction<boolean>>;
 }
 // You can use a custom interface or explicit fields or both! An alternative to the current function header might be:
 // REPLInput(history: string[], setHistory: Dispatch<SetStateAction<string[]>>)
@@ -15,6 +19,7 @@ export function REPLInput(props: REPLInputProps) {
   const [commandString, setCommandString] = useState<string>("");
   // TODO WITH TA : add a count state
   const [count, setCount] = useState<number>(0);
+  
   // TODO WITH TA: build a handleSubmit function called in button onClick
   // TODO: Once it increments, try to make it push commands... Note that you can use the `...` spread syntax to copy what was there before
   // add to it with new commands.
@@ -23,10 +28,29 @@ export function REPLInput(props: REPLInputProps) {
    * of the REPL and how they connect to each other...
    */
   function handleSubmit(commandString: string) {
+    if (commandString === "mode") {
+      props.setVerbose(!props.verbose);
+    }
     setCount(count + 1);
-    props.setHistory([...props.history, commandString]);
+    if(props.verbose === false) {
+      props.setHistory([...props.history, getOutputForCommand(commandString, props.verbose)]); 
+    } else {
+    props.setHistory([...props.history, "Command: " + commandString +"\n" + "Output: " + getOutputForCommand(commandString, props.verbose)]);
+    }
     setCommandString("");
   }
+
+  // <result of running the command>
+  function getOutputForCommand(commandString: string, props: REPLInputProps {
+    if(props.verbose === false) { //brief mode
+      //console.log("verbose mode"); 
+      return("mode"); 
+    } else { 
+      //console.log("brief mode"); 
+      return("brief"); 
+    }
+  }
+
   return (
     <div className="repl-input">
       {/* This is a comment within the JSX. Notice that it's a TypeScript comment wrapped in
