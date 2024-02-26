@@ -19,6 +19,7 @@ export function REPLInput(props: REPLInputProps) {
   const [commandString, setCommandString] = useState<string>("");
   // TODO WITH TA : add a count state
   const [count, setCount] = useState<number>(0);
+  const [verbose, setVerbose] = useState<boolean>(false);
   
   // TODO WITH TA: build a handleSubmit function called in button onClick
   // TODO: Once it increments, try to make it push commands... Note that you can use the `...` spread syntax to copy what was there before
@@ -33,21 +34,30 @@ export function REPLInput(props: REPLInputProps) {
     }
     setCount(count + 1);
     if(props.verbose === false) {
-      props.setHistory([...props.history, getOutputForCommand(commandString, props.verbose)]); 
+      props.setHistory([...props.history, getOutputForCommand(commandString)]); 
     } else {
-    props.setHistory([...props.history, "Command: " + commandString +"\n" + "Output: " + getOutputForCommand(commandString, props.verbose)]);
+    props.setHistory([...props.history, "Command: " + commandString +"\n" + "Output: " + getOutputForCommand(commandString)]);
     }
     setCommandString("");
   }
 
+  function changeMode(commandString: string){
+    if (commandString.includes('mode')){ //if mode command 
+      props.setVerbose(!props.verbose);
+    }
+  }
+
   // <result of running the command>
-  function getOutputForCommand(commandString: string, props: REPLInputProps) {
+  function getOutputForCommand(commandString: string) {
+    if (commandString.includes('mode')) {
+      console.log(props.verbose);
+      return ("this is the printed mode" + props.verbose); //this is undefined right now, need to initilize it
+    }
     if(props.verbose === false) { //brief mode
       //console.log("verbose mode"); 
-      return("mode"); 
+      return("brief mode"); 
     } else { 
-      //console.log("brief mode"); 
-      return("brief"); 
+      return("verbose"); 
     }
   }
 
