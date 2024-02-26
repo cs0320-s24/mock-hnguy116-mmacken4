@@ -41,7 +41,7 @@ export function REPLInput(props: REPLInputProps) {
   }
 
   // <result of running the command>
-  function getOutputForCommand(commandString: string, props: REPLInputProps {
+  function getOutputForCommand(commandString: string, props: REPLInputProps) {
     if(props.verbose === false) { //brief mode
       //console.log("verbose mode"); 
       return("mode"); 
