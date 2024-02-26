@@ -6,8 +6,6 @@ interface REPLInputProps {
   // TODO: Fill this with desired props... Maybe something to keep track of the submitted commands
   history: string[]; //push every command into this history array
   setHistory: Dispatch<SetStateAction<string[]>>; //use it to maintain state of list
-  //brief: boolean;
-  //setBrief: Dispatch<SetStateAction<boolean>>;
   verbose: boolean;
   setVerbose: Dispatch<SetStateAction<boolean>>;
 }
@@ -29,36 +27,53 @@ export function REPLInput(props: REPLInputProps) {
    * of the REPL and how they connect to each other...
    */
   function handleSubmit(commandString: string) {
-    if (commandString === "mode") {
-      props.setVerbose(!props.verbose);
-    }
+    // if (commandString === "mode") {
+    //   props.setVerbose(!props.verbose);
+    // }
+
     setCount(count + 1);
     if(props.verbose === false) {
-      props.setHistory([...props.history, getOutputForCommand(commandString)]); 
+      props.setHistory([...props.history, commandOutput(commandString)]); 
     } else {
-    props.setHistory([...props.history, "Command: " + commandString +"\n" + "Output: " + getOutputForCommand(commandString)]);
+    props.setHistory([...props.history, "Command: " + commandString +"\n" + "Output: " + commandOutput(commandString)]);
     }
     setCommandString("");
   }
 
-  function changeMode(commandString: string){
-    if (commandString.includes('mode')){ //if mode command 
-      props.setVerbose(!props.verbose);
-    }
-  }
+  // function modeBooleanToString(props: REPLInputProps): string {
+  //   if (props.verbose === false) {
+  //     return "Brief";
+  //   } else if (props.verbose === true) {
+  //     return "Verbose";
+  //   }
+  // }
 
   // <result of running the command>
-  function getOutputForCommand(commandString: string) {
-    if (commandString.includes('mode')) {
+  function commandOutput(commandString: string) {
+
+    // *** MODE COMMAND ***
+    // with .includes() the mode command occurs right away
+    // with === mode command occurs on the next command
+
+    //if (commandString.toLowerCase() === 'mode') {
+    if (commandString.includes('mode')) { // may need to change to ===, but this works for now
       console.log(props.verbose);
-      return ("this is the printed mode" + props.verbose); //this is undefined right now, need to initilize it
+      props.setVerbose(!props.verbose);
+      if (props.verbose === false) {
+        return ("Current Mode: Brief");
+      } else if (props.verbose === true) {
+        return ("Current Mode: Verbose");
+      }
     }
-    if(props.verbose === false) { //brief mode
-      //console.log("verbose mode"); 
-      return("brief mode"); 
-    } else { 
-      return("verbose"); 
-    }
+      //return ("Current Mode: " + modeBooleanToString(props.verbose));
+      //return ("Current Mode: " + props.verbose);
+
+    // *some issues with this need to fix up*
+    //  else {
+    //   return commandString;
+    // }
+
+    //put other commands here
   }
 
   return (
