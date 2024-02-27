@@ -8,6 +8,10 @@ interface REPLInputProps {
   setHistory: Dispatch<SetStateAction<string[]>>; //use it to maintain state of list
   verbose: boolean;
   setVerbose: Dispatch<SetStateAction<boolean>>;
+  file_history: string[][];
+  setFileHistory: Dispatch<SetStateAction<string[][]>>;
+  current_file: string;
+  setCurrentFile: Dispatch<SetStateAction<string>>;
 }
 // You can use a custom interface or explicit fields or both! An alternative to the current function header might be:
 // REPLInput(history: string[], setHistory: Dispatch<SetStateAction<string[]>>)
@@ -15,7 +19,6 @@ export function REPLInput(props: REPLInputProps) {
   // Remember: let React manage state in your webapp.
   // Manages the contents of the input box
   const [commandString, setCommandString] = useState<string>("");
-  // TODO WITH TA : add a count state
   const [count, setCount] = useState<number>(0);
 
   // TODO WITH TA: build a handleSubmit function called in button onClick
@@ -45,7 +48,6 @@ export function REPLInput(props: REPLInputProps) {
   // <result of running the command>
   function commandOutput(commandString: string) {
     commandString = commandString.trim().toLowerCase();
-
     // *** MODE COMMAND ***
     // with .includes() the mode command occurs right away
     // with === mode command occurs on the next command
@@ -53,8 +55,8 @@ export function REPLInput(props: REPLInputProps) {
     //if (commandString.toLowerCase() === 'mode') {
     if (commandString.includes("mode") && commandString.length === 4) {
       // may need to change to ===, but this works for now
-      const updatedMode = !props.verbose;
-      props.setVerbose(updatedMode);
+
+      props.setVerbose(!props.verbose);
       if (props.verbose === false) {
         return "Current Mode: Brief";
       } else if (props.verbose === true) {
@@ -62,7 +64,76 @@ export function REPLInput(props: REPLInputProps) {
       }
     }
 
-    //put other commands here
+    // *** LOAD, VIEW, & SEARCH CSV COMMAND ***
+    if (commandString.substring(0, 10) === "load_file ") {
+      let file_path = commandString.slice(9);
+      props.setCurrentFile(file_path);
+      mapFiles(file_path);
+      return "Success: CSV File Loaded";
+    } else if (commandString === "view") {
+      return makeHTMLTable(current_file);
+      //return "viewing a file";
+      //check that a file was loaded
+    } else if (commandString.substring(0, 7) === "search ") {
+      let searchParams = commandString.substring(7);
+      let searchArray = searchParams.split(" ");
+      let searchCol = searchArray[0];
+      let searchVal = searchArray[1];
+      return "search";
+    }
+  }
+  //put other commands here
+
+  //updates file_history?
+
+  function getMockedData(filePath: string): string[][] {
+    // Mock implementation
+    const mockedData = new MockedData();
+    const data = mockedData.getDataset("file1");
+    return data;
+    // [ ["H1", "H2", "H3"],
+    // ["a", "b", "c"], ]
+  }
+  function mapFiles(filePath: string) {
+    //file_history is string[][]
+    //
+    //ex [[filepath1, ""a", "b", "c""",""1", "2,", "3"""], [filepath2, ""e", "f", "g""",""3", "2,", "1"""]]
+    //setFileHistory is initially empty
+    //want to map filepath and mocked dataset (info inside filepath?)
+    //setFileHistory([[filePath, fileData]]);
+
+    const fileData = getMockedData(filePath); // Retrieve or mock the CSV data
+    // Check if the filePath already exists in file_history
+    const existingIndex = props.file_history.findIndex(
+      (entry) => entry[0] === filePath
+    );
+    if (existingIndex >= 0) {
+      // Update existing entry with new data
+      props.file_history[existingIndex] = [filePath, fileData];
+    } else {
+      // Add new entry
+      props.setFileHistory([...props.file_history, [filePath, fileData]]);
+    }
+  }
+
+  function makeHTMLTable(filePath: string) {
+    let data = getMockedData(filePath);
+    let HTMLTable = "<table>\n";
+    data.forEach((row, rowIndex) => {
+      HTMLTable += "  <tr>\n";
+
+      const tag = rowIndex === 0 ? "th" : "td";
+
+      // Iterate over each cell in the row
+      row.forEach((cell) => {
+        HTMLTable += `    <${tag}>${cell}</${tag}>\n`;
+      });
+
+      HTMLTable += "  </tr>\n";
+    });
+
+    HTMLTable += "</table>";
+    return HTMLTable;
   }
 
   return (
