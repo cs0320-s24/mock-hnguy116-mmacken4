@@ -1,4 +1,4 @@
-import { Dispatch, SetStateAction, useState} from "react";
+import { Dispatch, SetStateAction, useState } from "react";
 import "../styles/main.css";
 import { ControlledInput } from "./ControlledInput";
 
@@ -17,7 +17,7 @@ export function REPLInput(props: REPLInputProps) {
   const [commandString, setCommandString] = useState<string>("");
   // TODO WITH TA : add a count state
   const [count, setCount] = useState<number>(0);
-  
+
   // TODO WITH TA: build a handleSubmit function called in button onClick
   // TODO: Once it increments, try to make it push commands... Note that you can use the `...` spread syntax to copy what was there before
   // add to it with new commands.
@@ -26,51 +26,41 @@ export function REPLInput(props: REPLInputProps) {
    * of the REPL and how they connect to each other...
    */
   function handleSubmit(commandString: string) {
-    // if (commandString === "mode") {
-    //   props.setVerbose(!props.verbose);
-    // }
-
     setCount(count + 1);
-    if(props.verbose === false) {
-      props.setHistory([...props.history, commandOutput(commandString)]); 
+    if (props.verbose === false) {
+      props.setHistory([...props.history, commandOutput(commandString)]);
     } else {
-    props.setHistory([...props.history, "Command: " + commandString +"\n" + "Output: " + commandOutput(commandString)]);
+      props.setHistory([
+        ...props.history,
+        "Command: " +
+          commandString +
+          "\n" +
+          "Output: " +
+          commandOutput(commandString),
+      ]);
     }
     setCommandString("");
   }
 
-  // function modeBooleanToString(props: REPLInputProps): string {
-  //   if (props.verbose === false) {
-  //     return "Brief";
-  //   } else if (props.verbose === true) {
-  //     return "Verbose";
-  //   }
-  // }
-
   // <result of running the command>
   function commandOutput(commandString: string) {
+    commandString = commandString.trim().toLowerCase();
 
     // *** MODE COMMAND ***
     // with .includes() the mode command occurs right away
     // with === mode command occurs on the next command
 
     //if (commandString.toLowerCase() === 'mode') {
-    if (commandString.includes('mode')) { // may need to change to ===, but this works for now
-      console.log(props.verbose);
-      props.setVerbose(!props.verbose);
+    if (commandString.includes("mode") && commandString.length === 4) {
+      // may need to change to ===, but this works for now
+      const updatedMode = !props.verbose;
+      props.setVerbose(updatedMode);
       if (props.verbose === false) {
-        return ("Current Mode: Brief");
+        return "Current Mode: Brief";
       } else if (props.verbose === true) {
-        return ("Current Mode: Verbose");
+        return "Current Mode: Verbose";
       }
     }
-      //return ("Current Mode: " + modeBooleanToString(props.verbose));
-      //return ("Current Mode: " + props.verbose);
-
-    // *some issues with this need to fix up*
-    //  else {
-    //   return commandString;
-    // }
 
     //put other commands here
   }
@@ -86,12 +76,14 @@ export function REPLInput(props: REPLInputProps) {
         <ControlledInput
           value={commandString}
           setValue={setCommandString}
-          ariaLabel={"Command input"} 
+          ariaLabel={"Command input"}
         />
       </fieldset>
       {/* TODO WITH TA: Build a handleSubmit function that increments count and displays the text in the button */}
       {/* TODO: Currently this button just counts up, can we make it push the contents of the input box to the history?*/}
-      <button aria-label={"Submit"} onClick={() => handleSubmit(commandString)}>Submit</button>
+      <button aria-label={"Submit"} onClick={() => handleSubmit(commandString)}>
+        Submit
+      </button>
     </div>
   );
 }
