@@ -46,7 +46,7 @@ export function REPLInput(props: REPLInputProps) {
   }
 
   // <result of running the command>
-  function commandOutput(commandString: string) {
+  function commandOutput(commandString: string): string {
     commandString = commandString.trim().toLowerCase();
     // *** MODE COMMAND ***
     // with .includes() the mode command occurs right away
@@ -56,11 +56,12 @@ export function REPLInput(props: REPLInputProps) {
     if (commandString.includes("mode") && commandString.length === 4) {
       // may need to change to ===, but this works for now
 
-      props.setVerbose(!props.verbose);
       if (props.verbose === false) {
-        return "Current Mode: Brief";
-      } else if (props.verbose === true) {
+        props.setVerbose(!props.verbose);
         return "Current Mode: Verbose";
+      } else if (props.verbose === true) {
+        props.setVerbose(!props.verbose);
+        return "Current Mode: Brief";
       }
     }
 
@@ -68,11 +69,11 @@ export function REPLInput(props: REPLInputProps) {
     if (commandString.substring(0, 10) === "load_file ") {
       let file_path = commandString.slice(9);
       props.setCurrentFile(file_path);
-      mapFiles(file_path);
+      //mapFiles(file_path);
       return "Success: CSV File Loaded";
     } else if (commandString === "view") {
-      return makeHTMLTable(current_file);
-      //return "viewing a file";
+      //return makeHTMLTable(current_file);
+      return "viewing a file";
       //check that a file was loaded
     } else if (commandString.substring(0, 7) === "search ") {
       let searchParams = commandString.substring(7);
@@ -80,6 +81,8 @@ export function REPLInput(props: REPLInputProps) {
       let searchCol = searchArray[0];
       let searchVal = searchArray[1];
       return "search";
+    } else {
+      return "command not found!";
     }
   }
   //put other commands here
