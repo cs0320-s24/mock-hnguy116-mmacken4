@@ -17,7 +17,6 @@ export function REPLInput(props: REPLInputProps) {
   const [commandString, setCommandString] = useState<string>("");
   // TODO WITH TA : add a count state
   const [count, setCount] = useState<number>(0);
-  const [verbose, setVerbose] = useState<boolean>(false);
   
   // TODO WITH TA: build a handleSubmit function called in button onClick
   // TODO: Once it increments, try to make it push commands... Note that you can use the `...` spread syntax to copy what was there before
