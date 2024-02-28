@@ -8,10 +8,6 @@ interface REPLInputProps {
   setHistory: Dispatch<SetStateAction<string[]>>; //use it to maintain state of list
   verbose: boolean;
   setVerbose: Dispatch<SetStateAction<boolean>>;
-  // file_history: Map<string, string[][]>;
-  // setFileHistory: Dispatch<SetStateAction<Map<string, string[][]>>>;
-  // current_file: string;
-  // setCurrentFile: Dispatch<SetStateAction<string>>;
 }
 // You can use a custom interface or explicit fields or both! An alternative to the current function header might be:
 // REPLInput(history: string[], setHistory: Dispatch<SetStateAction<string[]>>)
@@ -23,6 +19,7 @@ export function REPLInput(props: REPLInputProps) {
   const [file_history, setFileHistory] = useState<Map<string, string[][]>>(
     new Map()
   );
+  //const [html_Table, setHTMLTable] = useState<string>("");
   const [loaded_file, setLoadFile] = useState<string>("");
 
   // TODO WITH TA: build a handleSubmit function called in button onClick
@@ -59,7 +56,6 @@ export function REPLInput(props: REPLInputProps) {
 
   function commandOutput(commandString: string): string {
     let newString = commandString.trim().toLowerCase();
-    let loadedFilePath = "";
     // *** MODE COMMAND ***
 
     if (newString.includes("mode") && newString.length === 4) {
@@ -72,23 +68,32 @@ export function REPLInput(props: REPLInputProps) {
 
     // *** LOAD, VIEW, & SEARCH CSV COMMAND ***
     if (commandString.substring(0, 10) === "load_file ") {
-      let file_path = commandString.slice(9);
-      // if (getMockedData(file_path) == [["File not found!"]]) {
-      //   return "File not found!";
-      // }
-      setLoadFile(file_path);
-      mapFiles(file_path);
-      console.log(file_history);
-      return loaded_file;
-      //return file_history.has(file_path).toString();
-      //return "File loaded";
+      let file_path = commandString.slice(10).trim().toLowerCase();
+      let data = getMockedData(file_path);
+      if (file_path.length === 0) {
+        return "No file path given!";
+      }
+      if (data.length === 1 && data[0][0] === "File not found!") {
+        return "File not found!";
+      } else {
+        setLoadFile(file_path);
+        mapFiles(file_path);
+        console.log(file_history);
+        //setHTMLTable(makeHTMLTable(file_path));
+        //return loaded_file;
+        // return file_history.has(file_path).toString();
+        return "File loaded successfully!";
+      }
     } else if (commandString === "view") {
-      return makeHTMLTable(loaded_file);
-      // if (loadedFilePath === "") {
-      //   return "No file loaded!";
-      // } else {
-      //   return "beep";
-      // }
+      if (!(loaded_file === "")) {
+        return loaded_file;
+        //return makeHTMLTable(loaded_file);
+
+      } else {
+        return "No file loaded!";
+      }
+      //return html_Table;
+      //return makeHTMLTable(loaded_file);
     } else if (commandString.substring(0, 7) === "search ") {
       let searchParams = commandString.substring(7);
       let searchArray = searchParams.split(" ");
@@ -149,8 +154,11 @@ export function REPLInput(props: REPLInputProps) {
       return file2;
     } else if (filePath === "mtfile") {
       return mtfile;
+    } else if (filePath === "file4") {
+      return file4;
+    } else {
+      return [["File not found!"]];
     }
-    return [["File not found!"]];
   }
 
   function mapFiles(filePath: string) {
@@ -165,30 +173,61 @@ export function REPLInput(props: REPLInputProps) {
 
   function makeHTMLTable(filePath: string): string {
     let data = getMockedData(filePath);
-    let tableHtml = "<table>\n<thead>\n<tr>\n";
+    let table = document.createElement('table');
+    let thead = document.createElement('thead');
+    let tbody = document.createElement('tbody');
+
+    const headerRow = document.createElement('tr');
 
     // Use the first row for column headers
-    data[0].forEach((header) => {
-      tableHtml += `<th>${header}</th>\n`;
+    data[0].forEach((headerText) => {
+      const header = document.createElement('th');
+      const textNode = document.createTextNode(headerText);
+      header.appendChild(textNode);
+      headerRow.appendChild(header);
     });
 
-    tableHtml += "</tr>\n</thead>\n<tbody>\n";
+    thead.appendChild(headerRow);
 
-    // Iterate over the remaining rows for the table body
-    for (let i = 1; i < data.length; i++) {
-      tableHtml += "<tr>\n";
-      data[i].forEach((cell) => {
-        tableHtml += `<td>${cell}</td>\n`;
-      });
-      tableHtml += "</tr>\n";
-    }
+    data.slice(1).forEach(rowData => {
+      const row = document.createElement('tr');
+      rowData.forEach(cellData => {
+        const cell = document.createElement('td');
+        const textNode = document.createTextNode(cellData);
+        cell.appendChild(textNode);
+        cell.appendChild(cell);
+      })
+      tbody.appendChild(row);
+    })
 
-    // Close the table body and the table
-    tableHtml += "</tbody>\n</table>";
+    table.appendChild(thead);
+    table.appendChild(tbody);
+    
+    return document.body.appendChild(table);
 
-    return tableHtml;
+
+    // tableHtml += "</tr>\n</thead>\n<tbody>\n";
+
+    // // Iterate over the remaining rows for the table body
+    // for (let i = 1; i < data.length; i++) {
+    //   tableHtml += "<tr>\n";
+    //   data[i].forEach((cell) => {
+    //     tableHtml += `<td>${cell}</td>\n`;
+    //   });
+    //   tableHtml += "</tr>\n";
+    // }
+
+    // // Close the table body and the table
+    // tableHtml += "</tbody>\n</table>";
+
+    // return tableHtml;
   }
 
+  function search(identifier: string) {
+    let matchedRows = [[]];
+     if(typeof parseInt(identifier))
+  }
+  
   return (
     <div className="repl-input">
       {/* This is a comment within the JSX. Notice that it's a TypeScript comment wrapped in
