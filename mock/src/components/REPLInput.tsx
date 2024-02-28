@@ -8,10 +8,10 @@ interface REPLInputProps {
   setHistory: Dispatch<SetStateAction<string[]>>; //use it to maintain state of list
   verbose: boolean;
   setVerbose: Dispatch<SetStateAction<boolean>>;
-  file_history: string[][];
-  setFileHistory: Dispatch<SetStateAction<string[][]>>;
-  current_file: string;
-  setCurrentFile: Dispatch<SetStateAction<string>>;
+  // file_history: Map<string, string[][]>;
+  // setFileHistory: Dispatch<SetStateAction<Map<string, string[][]>>>;
+  // current_file: string;
+  // setCurrentFile: Dispatch<SetStateAction<string>>;
 }
 // You can use a custom interface or explicit fields or both! An alternative to the current function header might be:
 // REPLInput(history: string[], setHistory: Dispatch<SetStateAction<string[]>>)
@@ -19,7 +19,11 @@ export function REPLInput(props: REPLInputProps) {
   // Remember: let React manage state in your webapp.
   // Manages the contents of the input box
   const [commandString, setCommandString] = useState<string>("");
-  const [count, setCount] = useState<number>(0);
+  //const [count, setCount] = useState<number>(0);
+  const [file_history, setFileHistory] = useState<Map<string, string[][]>>(
+    new Map()
+  );
+  const [loaded_file, setLoadFile] = useState<string>("");
 
   // TODO WITH TA: build a handleSubmit function called in button onClick
   // TODO: Once it increments, try to make it push commands... Note that you can use the `...` spread syntax to copy what was there before
@@ -29,24 +33,15 @@ export function REPLInput(props: REPLInputProps) {
    * of the REPL and how they connect to each other...
    */
   function handleSubmit(commandString: string) {
-    setCount(count + 1);
+    //setCount(count + 1);
     if (props.verbose === false) {
-      // props.setHistory([
-      //   ...props.history,
-      //   "Command: " +
-      //     commandString +
-      //     "\n" +
-      //     "Output: " +
-      //     commandOutput(commandString),
-      // ]);
       props.setHistory([...props.history, commandOutput(commandString)]);
     } else {
-      //props.setHistory([...props.history, commandOutput(commandString)]);
       props.setHistory([
         ...props.history,
         "Command: " +
           commandString +
-          "\n \n" +
+          "\n" +
           "Output: " +
           commandOutput(commandString),
       ]);
@@ -62,16 +57,12 @@ export function REPLInput(props: REPLInputProps) {
     }
   }
 
-  // <result of running the command>
   function commandOutput(commandString: string): string {
-    commandString = commandString.trim().toLowerCase();
+    let newString = commandString.trim().toLowerCase();
+    let loadedFilePath = "";
     // *** MODE COMMAND ***
-    // with .includes() the mode command occurs right away
-    // with === mode command occurs on the next command
 
-    //if (commandString.toLowerCase() === 'mode') {
-    if (commandString.includes("mode") && commandString.length === 4) {
-      // may need to change to ===, but this works for now
+    if (newString.includes("mode") && newString.length === 4) {
       if (props.verbose === false) {
         return "Brief mode!";
       } else if (props.verbose === true) {
@@ -82,13 +73,22 @@ export function REPLInput(props: REPLInputProps) {
     // *** LOAD, VIEW, & SEARCH CSV COMMAND ***
     if (commandString.substring(0, 10) === "load_file ") {
       let file_path = commandString.slice(9);
-      props.setCurrentFile(file_path);
-      //mapFiles(file_path);
-      return "Success: CSV File Loaded";
+      // if (getMockedData(file_path) == [["File not found!"]]) {
+      //   return "File not found!";
+      // }
+      setLoadFile(file_path);
+      mapFiles(file_path);
+      console.log(file_history);
+      return loaded_file;
+      //return file_history.has(file_path).toString();
+      //return "File loaded";
     } else if (commandString === "view") {
-      //return makeHTMLTable(current_file);
-      return "viewing a file";
-      //check that a file was loaded
+      return makeHTMLTable(loaded_file);
+      // if (loadedFilePath === "") {
+      //   return "No file loaded!";
+      // } else {
+      //   return "beep";
+      // }
     } else if (commandString.substring(0, 7) === "search ") {
       let searchParams = commandString.substring(7);
       let searchArray = searchParams.split(" ");
@@ -99,58 +99,94 @@ export function REPLInput(props: REPLInputProps) {
       return "Command not found!";
     }
   }
-  //put other commands here
-
-  //updates file_history?
 
   function getMockedData(filePath: string): string[][] {
     // Mock implementation
-    const mockedData = new MockedData();
-    const data = mockedData.getDataset("file1");
-    return data;
-    // [ ["H1", "H2", "H3"],
-    // ["a", "b", "c"], ]
-  }
-  function mapFiles(filePath: string) {
-    //file_history is string[][]
-    //
-    //ex [[filepath1, ""a", "b", "c""",""1", "2,", "3"""], [filepath2, ""e", "f", "g""",""3", "2,", "1"""]]
-    //setFileHistory is initially empty
-    //want to map filepath and mocked dataset (info inside filepath?)
-    //setFileHistory([[filePath, fileData]]);
+    const file1 = [
+      ["1", "2", "3"],
+      ["4", "5", "6"],
+      ["7", "8", "9"],
+    ];
+    const file2 = [
+      ["beep", "boop", "beep"],
+      ["boo", "b", "bee"],
+      ["ooo", "cee", "see"],
+      ["fdgfd", "gdfgdf", "gdgdf"],
+    ];
+    const mtfile = [[]];
+    const file4 = [
+      [
+        "State",
+        "RI",
+        "Data Type",
+        "Native American/American Indian",
+        "Average Weekly Earnings",
+        " $471.07 ",
+        "Number of Workers",
+        "Earnings Disparity",
+        " $0.45 ",
+        "Employed Percent",
+        "0%",
+      ],
+      [
+        "State",
+        "RI",
+        "Data Type",
+        "Asian-Pacific Islander",
+        "Average Weekly Earnings",
+        " $1,080.09 ",
+        "Number of Workers",
+        "Earnings Disparity",
+        " $1.02 ",
+        "Employed Percent",
+        "4%",
+      ],
+    ];
 
-    const fileData = getMockedData(filePath); // Retrieve or mock the CSV data
-    // Check if the filePath already exists in file_history
-    const existingIndex = props.file_history.findIndex(
-      (entry) => entry[0] === filePath
-    );
-    if (existingIndex >= 0) {
-      // Update existing entry with new data
-      props.file_history[existingIndex] = [filePath, fileData];
-    } else {
-      // Add new entry
-      props.setFileHistory([...props.file_history, [filePath, fileData]]);
+    if (filePath === "file1") {
+      return file1;
+    } else if (filePath === "file2") {
+      return file2;
+    } else if (filePath === "mtfile") {
+      return mtfile;
+    }
+    return [["File not found!"]];
+  }
+
+  function mapFiles(filePath: string) {
+    const dataset = getMockedData(filePath); // Retrieve or mock the CSV data
+
+    //if file doesn't exist in map, add file to map
+    if (file_history.has(filePath) === false) {
+      setFileHistory(file_history.set(filePath, dataset));
+      return "File mapped";
     }
   }
 
-  function makeHTMLTable(filePath: string) {
+  function makeHTMLTable(filePath: string): string {
     let data = getMockedData(filePath);
-    let HTMLTable = "<table>\n";
-    data.forEach((row, rowIndex) => {
-      HTMLTable += "  <tr>\n";
+    let tableHtml = "<table>\n<thead>\n<tr>\n";
 
-      const tag = rowIndex === 0 ? "th" : "td";
-
-      // Iterate over each cell in the row
-      row.forEach((cell) => {
-        HTMLTable += `    <${tag}>${cell}</${tag}>\n`;
-      });
-
-      HTMLTable += "  </tr>\n";
+    // Use the first row for column headers
+    data[0].forEach((header) => {
+      tableHtml += `<th>${header}</th>\n`;
     });
 
-    HTMLTable += "</table>";
-    return HTMLTable;
+    tableHtml += "</tr>\n</thead>\n<tbody>\n";
+
+    // Iterate over the remaining rows for the table body
+    for (let i = 1; i < data.length; i++) {
+      tableHtml += "<tr>\n";
+      data[i].forEach((cell) => {
+        tableHtml += `<td>${cell}</td>\n`;
+      });
+      tableHtml += "</tr>\n";
+    }
+
+    // Close the table body and the table
+    tableHtml += "</tbody>\n</table>";
+
+    return tableHtml;
   }
 
   return (
