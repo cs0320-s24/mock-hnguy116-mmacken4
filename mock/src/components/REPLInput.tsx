@@ -31,18 +31,35 @@ export function REPLInput(props: REPLInputProps) {
   function handleSubmit(commandString: string) {
     setCount(count + 1);
     if (props.verbose === false) {
+      // props.setHistory([
+      //   ...props.history,
+      //   "Command: " +
+      //     commandString +
+      //     "\n" +
+      //     "Output: " +
+      //     commandOutput(commandString),
+      // ]);
       props.setHistory([...props.history, commandOutput(commandString)]);
     } else {
+      //props.setHistory([...props.history, commandOutput(commandString)]);
       props.setHistory([
         ...props.history,
         "Command: " +
           commandString +
-          "\n" +
+          "\n \n" +
           "Output: " +
           commandOutput(commandString),
       ]);
     }
     setCommandString("");
+  }
+  commandString.trim().toLowerCase();
+  if (commandString.includes("mode") && commandString.length === 4) {
+    if (props.verbose === false) {
+      props.setVerbose(true);
+    } else {
+      props.setVerbose(false);
+    }
   }
 
   // <result of running the command>
@@ -55,13 +72,10 @@ export function REPLInput(props: REPLInputProps) {
     //if (commandString.toLowerCase() === 'mode') {
     if (commandString.includes("mode") && commandString.length === 4) {
       // may need to change to ===, but this works for now
-
       if (props.verbose === false) {
-        props.setVerbose(!props.verbose);
-        return "Current Mode: Verbose";
+        return "Brief mode!";
       } else if (props.verbose === true) {
-        props.setVerbose(!props.verbose);
-        return "Current Mode: Brief";
+        return "Verbose mode!";
       }
     }
 
@@ -82,7 +96,7 @@ export function REPLInput(props: REPLInputProps) {
       let searchVal = searchArray[1];
       return "search";
     } else {
-      return "command not found!";
+      return "Command not found!";
     }
   }
   //put other commands here
