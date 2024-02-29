@@ -24,7 +24,12 @@ export default function REPL() {
       {/* TODO: Update your REPLHistory and REPLInput to take in new shared state as props */}
       <REPLHistory history={history} />
       <hr></hr>
-      <REPLInput history={history} setHistory={setHistory} verbose={verbose} setVerbose={setVerbose}/>
+      <REPLInput
+        history={history}
+        setHistory={setHistory}
+        verbose={verbose}
+        setVerbose={setVerbose}
+      />
     </div>
   );
 }

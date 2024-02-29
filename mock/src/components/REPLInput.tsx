@@ -8,6 +8,8 @@ interface REPLInputProps {
   setHistory: Dispatch<SetStateAction<string[]>>; //use it to maintain state of list
   verbose: boolean;
   setVerbose: Dispatch<SetStateAction<boolean>>;
+  //data: string[][];
+  //setData: Dispatch<SetStateAction<string[][]>>;
 }
 // You can use a custom interface or explicit fields or both! An alternative to the current function header might be:
 // REPLInput(history: string[], setHistory: Dispatch<SetStateAction<string[]>>)
@@ -67,7 +69,7 @@ export function REPLInput(props: REPLInputProps) {
     }
 
     // *** LOAD, VIEW, & SEARCH CSV COMMAND ***
-    if (commandString.substring(0, 10) === "load_file ") {
+    if (newString.substring(0, 10) === "load_file ") {
       let file_path = commandString.slice(10).trim().toLowerCase();
       let data = getMockedData(file_path);
       if (file_path.length === 0) {
@@ -77,6 +79,7 @@ export function REPLInput(props: REPLInputProps) {
         return "File not found!";
       } else {
         setLoadFile(file_path);
+        //props.setData(getMockedData(file_path));
         mapFiles(file_path);
         console.log(file_history);
         //setHTMLTable(makeHTMLTable(file_path));
@@ -84,39 +87,138 @@ export function REPLInput(props: REPLInputProps) {
         // return file_history.has(file_path).toString();
         return "File loaded successfully!";
       }
-    } else if (commandString === "view") {
+    } else if (newString === "view") {
       if (!(loaded_file === "")) {
-        return loaded_file;
+        //return loaded_file;
         //return makeHTMLTable(loaded_file);
-
       } else {
         return "No file loaded!";
       }
       //return html_Table;
       //return makeHTMLTable(loaded_file);
-    } else if (commandString.substring(0, 7) === "search ") {
-      let searchParams = commandString.substring(7);
+    } else if (newString.substring(0, 7) === "search ") {
+      if (loaded_file === "") {
+        return "No file loaded!";
+      }
+      let searchParams = commandString.substring(7).trim();
       let searchArray = searchParams.split(" ");
-      let searchCol = searchArray[0];
-      let searchVal = searchArray[1];
-      return "search";
-    } else {
-      return "Command not found!";
+      if (searchArray.length === 0) {
+        return "No search parameters given!";
+      } else if (searchArray.length > 2) {
+        return "Too many search parameters given!";
+      }
+      let matchedRows = search(searchArray);
+      return "Matched rows: " + matchedRows.join(" ");
     }
+    return "Command not found!";
+  }
+
+  function mapFiles(filePath: string) {
+    const dataset = getMockedData(filePath); // Retrieve or mock the CSV data
+
+    //if file doesn't exist in map, add file to map
+    if (file_history.has(filePath) === false) {
+      setFileHistory(file_history.set(filePath, dataset));
+      return "File mapped";
+    }
+  }
+
+  function makeHTMLTable(filePath: string): string {
+    let data = getMockedData(filePath);
+    let tableHtml = "<table>\n<thead>\n<tr>\n";
+
+    // Use the first row for column headers
+    props.data[0].forEach((header) => {
+      tableHtml += `<th>${header}</th>\n`;
+    });
+
+    tableHtml += "</tr>\n</thead>\n<tbody>\n";
+
+    // Iterate over the remaining rows for the table body
+    for (let i = 1; i < data.length; i++) {
+      tableHtml += "<tr>\n";
+      data[i].forEach((cell) => {
+        tableHtml += `<td>${cell}</td>\n`;
+      });
+      tableHtml += "</tr>\n";
+    }
+
+    // Close the table body and the table
+    tableHtml += "</tbody>\n</table>";
+
+    return tableHtml;
+  }
+
+  function search(searchParams: Array<String>): Array<Array<string>> {
+    if (loaded_file === "file1") {
+      if (searchParams.length === 2) {
+        if (searchParams[0] === "0" && searchParams[1] === "1") {
+          //search for val w index
+          return [["1", "2", "3"]];
+        } else if (searchParams[0] === "0" && searchParams[1] === "hi") {
+          //search for non-exist val w index
+          return [[]];
+        } else if (searchParams[0] === "col 3" && searchParams[1] === "6") {
+          //search for val w col name
+          return [
+            ["4", "1", "6"],
+            ["4", "2", "6"],
+          ];
+        }
+      }
+    } else if (loaded_file === "file 2") {
+      if (searchParams.length === 2) {
+        if (searchParams[0] === "1" && searchParams[1] === "boop") {
+          //search for val w index (>1 matched row)
+          return [
+            ["beep", "boop", "beep"],
+            ["boo", "boop", "bee"],
+          ];
+        }
+      } else {
+        if (searchParams[0] === "ooo") {
+          //search w/o identifier
+          return [
+            ["ooo", "cee", "see"],
+            ["beep", "ooo", "bloo"],
+          ];
+        }
+      }
+    } else if (loaded_file === "file4") {
+      if (searchParams.length === 2) {
+        if (searchParams[0] === "6000" && searchParams[1] === "RI") {
+          //search w non-existent index
+          return [[]];
+        } else if (searchParams[0] === "6000" && searchParams[1] === "eek") {
+          //search w non-existent index and val
+          return [[]];
+        }
+      } else if (searchParams[0] === "eek") {
+        //search w non existent val
+        return [[]];
+      }
+    } else if (loaded_file === "mtfile") {
+      //any search on empty file
+      return [[]];
+    }
+    return [[]];
   }
 
   function getMockedData(filePath: string): string[][] {
     // Mock implementation
     const file1 = [
+      ["col 1", "col 2", "col 3"],
       ["1", "2", "3"],
-      ["4", "5", "6"],
+      ["4", "1", "6"],
       ["7", "8", "9"],
+      ["4", "2", "6"],
     ];
     const file2 = [
       ["beep", "boop", "beep"],
-      ["boo", "b", "bee"],
+      ["boo", "boop", "bee"],
       ["ooo", "cee", "see"],
       ["fdgfd", "gdfgdf", "gdgdf"],
+      ["beep", "ooo", "bloo"],
     ];
     const mtfile = [[]];
     const file4 = [
@@ -161,73 +263,6 @@ export function REPLInput(props: REPLInputProps) {
     }
   }
 
-  function mapFiles(filePath: string) {
-    const dataset = getMockedData(filePath); // Retrieve or mock the CSV data
-
-    //if file doesn't exist in map, add file to map
-    if (file_history.has(filePath) === false) {
-      setFileHistory(file_history.set(filePath, dataset));
-      return "File mapped";
-    }
-  }
-
-  function makeHTMLTable(filePath: string): string {
-    let data = getMockedData(filePath);
-    let table = document.createElement('table');
-    let thead = document.createElement('thead');
-    let tbody = document.createElement('tbody');
-
-    const headerRow = document.createElement('tr');
-
-    // Use the first row for column headers
-    data[0].forEach((headerText) => {
-      const header = document.createElement('th');
-      const textNode = document.createTextNode(headerText);
-      header.appendChild(textNode);
-      headerRow.appendChild(header);
-    });
-
-    thead.appendChild(headerRow);
-
-    data.slice(1).forEach(rowData => {
-      const row = document.createElement('tr');
-      rowData.forEach(cellData => {
-        const cell = document.createElement('td');
-        const textNode = document.createTextNode(cellData);
-        cell.appendChild(textNode);
-        cell.appendChild(cell);
-      })
-      tbody.appendChild(row);
-    })
-
-    table.appendChild(thead);
-    table.appendChild(tbody);
-    
-    return document.body.appendChild(table);
-
-
-    // tableHtml += "</tr>\n</thead>\n<tbody>\n";
-
-    // // Iterate over the remaining rows for the table body
-    // for (let i = 1; i < data.length; i++) {
-    //   tableHtml += "<tr>\n";
-    //   data[i].forEach((cell) => {
-    //     tableHtml += `<td>${cell}</td>\n`;
-    //   });
-    //   tableHtml += "</tr>\n";
-    // }
-
-    // // Close the table body and the table
-    // tableHtml += "</tbody>\n</table>";
-
-    // return tableHtml;
-  }
-
-  function search(identifier: string) {
-    let matchedRows = [[]];
-     if(typeof parseInt(identifier))
-  }
-  
   return (
     <div className="repl-input">
       {/* This is a comment within the JSX. Notice that it's a TypeScript comment wrapped in
