@@ -8,8 +8,6 @@ interface REPLInputProps {
   setHistory: Dispatch<SetStateAction<string[]>>; //use it to maintain state of list
   verbose: boolean;
   setVerbose: Dispatch<SetStateAction<boolean>>;
-  //data: string[][];
-  //setData: Dispatch<SetStateAction<string[][]>>;
 }
 // You can use a custom interface or explicit fields or both! An alternative to the current function header might be:
 // REPLInput(history: string[], setHistory: Dispatch<SetStateAction<string[]>>)
@@ -102,12 +100,17 @@ export function REPLInput(props: REPLInputProps) {
       }
       let searchParams = commandString.substring(7).trim();
       let searchArray = searchParams.split(" ");
+      searchArray[0] = searchArray[0].trim();
+      searchArray[1] = searchArray[1].trim();
       if (searchArray.length === 0) {
         return "No search parameters given!";
       } else if (searchArray.length > 2) {
         return "Too many search parameters given!";
       }
       let matchedRows = search(searchArray);
+      if (matchedRows.length === 0) {
+        return "No rows found!";
+      }
       return "Matched rows: " + matchedRows.join(" ");
     }
     return "Command not found!";
@@ -128,7 +131,7 @@ export function REPLInput(props: REPLInputProps) {
     let tableHtml = "<table>\n<thead>\n<tr>\n";
 
     // Use the first row for column headers
-    props.data[0].forEach((header) => {
+    data[0].forEach((header) => {
       tableHtml += `<th>${header}</th>\n`;
     });
 
@@ -158,7 +161,7 @@ export function REPLInput(props: REPLInputProps) {
         } else if (searchParams[0] === "0" && searchParams[1] === "hi") {
           //search for non-exist val w index
           return [[]];
-        } else if (searchParams[0] === "col 3" && searchParams[1] === "6") {
+        } else if (searchParams[0] === "col3" && searchParams[1] === "6") {
           //search for val w col name
           return [
             ["4", "1", "6"],
@@ -166,7 +169,7 @@ export function REPLInput(props: REPLInputProps) {
           ];
         }
       }
-    } else if (loaded_file === "file 2") {
+    } else if (loaded_file === "file2") {
       if (searchParams.length === 2) {
         if (searchParams[0] === "1" && searchParams[1] === "boop") {
           //search for val w index (>1 matched row)
@@ -207,7 +210,7 @@ export function REPLInput(props: REPLInputProps) {
   function getMockedData(filePath: string): string[][] {
     // Mock implementation
     const file1 = [
-      ["col 1", "col 2", "col 3"],
+      ["col1", "col2", "col3"],
       ["1", "2", "3"],
       ["4", "1", "6"],
       ["7", "8", "9"],
