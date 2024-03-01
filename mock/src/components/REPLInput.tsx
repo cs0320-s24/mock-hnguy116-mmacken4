@@ -8,10 +8,6 @@ interface REPLInputProps {
   setHistory: Dispatch<SetStateAction<string[]>>; //use it to maintain state of list
   verbose: boolean;
   setVerbose: Dispatch<SetStateAction<boolean>>;
-  // file_history: Map<string, string[][]>;
-  // setFileHistory: Dispatch<SetStateAction<Map<string, string[][]>>>;
-  // current_file: string;
-  // setCurrentFile: Dispatch<SetStateAction<string>>;
 }
 // You can use a custom interface or explicit fields or both! An alternative to the current function header might be:
 // REPLInput(history: string[], setHistory: Dispatch<SetStateAction<string[]>>)
@@ -23,6 +19,7 @@ export function REPLInput(props: REPLInputProps) {
   const [file_history, setFileHistory] = useState<Map<string, string[][]>>(
     new Map()
   );
+  //const [html_Table, setHTMLTable] = useState<string>("");
   const [loaded_file, setLoadFile] = useState<string>("");
 
   // TODO WITH TA: build a handleSubmit function called in button onClick
@@ -57,9 +54,8 @@ export function REPLInput(props: REPLInputProps) {
     }
   }
 
-  function commandOutput(commandString: string): string {
+  function commandOutput(commandString: string): any {
     let newString = commandString.trim().toLowerCase();
-    let loadedFilePath = "";
     // *** MODE COMMAND ***
 
     if (newString.includes("mode") && newString.length === 4) {
@@ -70,48 +66,147 @@ export function REPLInput(props: REPLInputProps) {
       }
     }
 
-    // *** LOAD, VIEW, & SEARCH CSV COMMAND ***
-    if (commandString.substring(0, 10) === "load_file ") {
-      let file_path = commandString.slice(9);
-      // if (getMockedData(file_path) == [["File not found!"]]) {
-      //   return "File not found!";
-      // }
-      setLoadFile(file_path);
-      mapFiles(file_path);
-      console.log(file_history);
-      return loaded_file;
-      //return file_history.has(file_path).toString();
-      //return "File loaded";
-    } else if (commandString === "view") {
-      return makeHTMLTable(loaded_file);
-      // if (loadedFilePath === "") {
-      //   return "No file loaded!";
-      // } else {
-      //   return "beep";
-      // }
-    } else if (commandString.substring(0, 7) === "search ") {
-      let searchParams = commandString.substring(7);
+    // *** LOAD COMMAND ***
+    if (newString.substring(0, 10) === "load_file ") {
+      let file_path = commandString.slice(10).trim().toLowerCase();
+      let data = getMockedData(file_path);
+      if (file_path.length === 0) {
+        return "No file path given!";
+      }
+      if (data.length === 1 && data[0][0] === "File not found!") {
+        return "File not found!";
+      } else {
+        setLoadFile(file_path);
+        mapFiles(file_path);
+        return "File loaded successfully!";
+      }
+
+      // *** VIEW COMMAND ***
+    } else if (newString === "view") {
+      if (!(loaded_file === "")) {
+        let data = getMockedData(loaded_file);
+        return makeHTMLTable(data);
+      } else {
+        return "No file loaded!";
+      }
+
+      // *** SEARCH COMMAND ***
+    } else if (newString.substring(0, 7) === "search ") {
+      if (loaded_file === "") {
+        return "No file loaded!";
+      }
+      let searchParams = commandString.substring(7).trim();
       let searchArray = searchParams.split(" ");
-      let searchCol = searchArray[0];
-      let searchVal = searchArray[1];
-      return "search";
-    } else {
-      return "Command not found!";
+      searchArray[0] = searchArray[0].trim();
+      searchArray[1] = searchArray[1].trim();
+      if (searchArray.length === 0) {
+        return "No search parameters given!";
+      } else if (searchArray.length > 2) {
+        return "Too many search parameters given!";
+      }
+      let matchedRows = search(searchArray);
+      if (matchedRows.length === 0) {
+        return "No rows found!";
+      }
+      return makeHTMLTable(matchedRows);
     }
+    return "Command not found!";
+  }
+
+  function mapFiles(filePath: string) {
+    const dataset = getMockedData(filePath);
+
+    //if file doesn't exist in map, add file to map
+    if (file_history.has(filePath) === false) {
+      setFileHistory(file_history.set(filePath, dataset));
+      return "File mapped";
+    }
+  }
+
+  function makeHTMLTable(data: string[][]) {
+    return (
+      <table className="html-table" aria-label="html-table">
+        {data.map((command, index) => (
+          <tr key={index}>
+            {command.map((command2, element) => (
+              <td key={element}>{command2}</td>
+            ))}
+          </tr>
+        ))}
+      </table>
+    );
+  }
+
+  function search(searchParams: string[]): string[][] {
+    if (loaded_file === "file1") {
+      if (searchParams.length === 2) {
+        if (searchParams[0] === "0" && searchParams[1] === "1") {
+          //search for val w index
+          return [["1", "2", "3"]];
+        } else if (searchParams[0] === "0" && searchParams[1] === "hi") {
+          //search for non-exist val w index
+          return [[]];
+        } else if (searchParams[0] === "col3" && searchParams[1] === "6") {
+          //search for val w col name
+          return [
+            ["4", "1", "6"],
+            ["4", "2", "6"],
+          ];
+        }
+      }
+    } else if (loaded_file === "file2") {
+      if (searchParams.length === 2) {
+        if (searchParams[0] === "1" && searchParams[1] === "boop") {
+          //search for val w index (>1 matched row)
+          return [
+            ["beep", "boop", "beep"],
+            ["boo", "boop", "bee"],
+          ];
+        }
+      } else {
+        if (searchParams[0] === "ooo") {
+          //search w/o identifier
+          return [
+            ["ooo", "cee", "see"],
+            ["beep", "ooo", "bloo"],
+          ];
+        }
+      }
+    } else if (loaded_file === "file4") {
+      if (searchParams.length === 2) {
+        if (searchParams[0] === "6000" && searchParams[1] === "RI") {
+          //search w non-existent index
+          return [[]];
+        } else if (searchParams[0] === "6000" && searchParams[1] === "eek") {
+          //search w non-existent index and val
+          return [[]];
+        }
+      } else if (searchParams[0] === "eek") {
+        //search w non existent val
+        return [[]];
+      }
+    } else if (loaded_file === "mtfile") {
+      //any search on empty file
+      return [[]];
+    }
+    return [[]];
   }
 
   function getMockedData(filePath: string): string[][] {
     // Mock implementation
     const file1 = [
+      ["col1", "col2", "col3"],
       ["1", "2", "3"],
-      ["4", "5", "6"],
+      ["4", "1", "6"],
       ["7", "8", "9"],
+      ["4", "2", "6"],
     ];
     const file2 = [
       ["beep", "boop", "beep"],
-      ["boo", "b", "bee"],
+      ["boo", "boop", "bee"],
       ["ooo", "cee", "see"],
       ["fdgfd", "gdfgdf", "gdgdf"],
+      ["beep", "ooo", "bloo"],
     ];
     const mtfile = [[]];
     const file4 = [
@@ -149,44 +244,11 @@ export function REPLInput(props: REPLInputProps) {
       return file2;
     } else if (filePath === "mtfile") {
       return mtfile;
+    } else if (filePath === "file4") {
+      return file4;
+    } else {
+      return [["File not found!"]];
     }
-    return [["File not found!"]];
-  }
-
-  function mapFiles(filePath: string) {
-    const dataset = getMockedData(filePath); // Retrieve or mock the CSV data
-
-    //if file doesn't exist in map, add file to map
-    if (file_history.has(filePath) === false) {
-      setFileHistory(file_history.set(filePath, dataset));
-      return "File mapped";
-    }
-  }
-
-  function makeHTMLTable(filePath: string): string {
-    let data = getMockedData(filePath);
-    let tableHtml = "<table>\n<thead>\n<tr>\n";
-
-    // Use the first row for column headers
-    data[0].forEach((header) => {
-      tableHtml += `<th>${header}</th>\n`;
-    });
-
-    tableHtml += "</tr>\n</thead>\n<tbody>\n";
-
-    // Iterate over the remaining rows for the table body
-    for (let i = 1; i < data.length; i++) {
-      tableHtml += "<tr>\n";
-      data[i].forEach((cell) => {
-        tableHtml += `<td>${cell}</td>\n`;
-      });
-      tableHtml += "</tr>\n";
-    }
-
-    // Close the table body and the table
-    tableHtml += "</tbody>\n</table>";
-
-    return tableHtml;
   }
 
   return (
