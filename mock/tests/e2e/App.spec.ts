@@ -153,8 +153,54 @@ test("mode changes the output", async ({ page }) => {
   await page.getByLabel("Command input").click();
   await page.getByLabel("Command input").fill("mode");
   await page.getByLabel("Submit").click();
+  let output = await page.innerText(".repl-history");
+  expect(output).toContain('Command: mode Output: Verbose mode!');
+});
+
+test("after load_file and search, an html table has the right rows being returned", async ({
+  page,
+}) => {
+  await page.getByLabel("Login").click();
   await page.getByLabel("Command input").click();
+  await page.getByLabel("Command input").fill("load_file file1");
   await page.getByLabel("Submit").click();
-  let output = await page.textContent(".output");
-  expect(output).toContain("Command: mode Output: Verbose Mode!");
+  await page.getByLabel("Command input").click();
+  await page.getByLabel("Command input").fill("search col3 6");
+  await page.getByLabel("Submit").click();
+  const tableContent = await page.$eval(
+    ".html-table",
+    (table) => table.innerHTML
+  );
+  expect(tableContent).toContain("<td>4</td>");
+  expect(tableContent).toContain("<td>1</td>");
+  expect(tableContent).toContain("<td>6</td>");
+  expect(tableContent).toContain("<td>4</td>");
+  expect(tableContent).toContain("<td>2</td>");
+  expect(tableContent).toContain("<td>6</td>");
+});
+
+test("search, an html table with right rows returned in verbose mode", async ({
+  page,
+}) => {
+  await page.getByLabel("Login").click();
+  await page.getByLabel("Command input").click();
+  await page.getByLabel("Command input").fill("mode");
+  await page.getByLabel("Submit").click();
+  await page.getByLabel("Command input").fill("load_file file1");
+  await page.getByLabel("Submit").click();
+  await page.getByLabel("Command input").click();
+  await page.getByLabel("Command input").fill("search col3 6");
+  await page.getByLabel("Submit").click();
+
+  const tableContent = await page.$eval('.html-table', (table) => table.innerHTML);
+  expect(tableContent).toContain('4</td>');
+  expect(tableContent).toContain('1</td>');
+  expect(tableContent).toContain('6</td>');
+  expect(tableContent).toContain('4</td>');
+  expect(tableContent).toContain('2</td>');
+  expect(tableContent).toContain('6</td>');
+
+  let output = await page.innerText('.repl-history');
+  expect(output).toContain('Command: search col3 6 ');
+  
 });
