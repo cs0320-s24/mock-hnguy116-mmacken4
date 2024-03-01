@@ -136,7 +136,7 @@ export function REPLInput(props: REPLInputProps) {
     if (args.length > 2) {
       return "Too many parameters given, unable to search file.";
     }
-    if (args.length === 2) {
+    if (args.length === 2 || args.length === 1) {
       setLoadFile(loaded_file);
       let matchedRows = search(args);
       if (matchedRows.length === 0) {
@@ -260,6 +260,25 @@ export function REPLInput(props: REPLInputProps) {
         if (searchParams[0] === "0" && searchParams[1] === "1") {
           //search for val w index
           return [["1", "2", "3"]];
+          // let matchedRows = [["1", "2", "3"]];
+          // return makeHTMLTable(matchedRows);
+        } else if (searchParams[0] === "0" && searchParams[1] === "hi") {
+          //search for non-exist val w index
+          return [["Value does not exist in file"]];
+        } else if (searchParams[0] === "col3" && searchParams[1] === "6") {
+          //search for val w col name
+          return [
+            ["4", "1", "6"],
+            ["4", "2", "6"],
+          ];
+        }
+      } else if (searchParams.length === 1) {
+        if (searchParams[0] === "1") {
+          //search for val w index
+          return [
+            ["1", "2", "3"],
+            ["4", "1", ""],
+          ];
           // let matchedRows = [["1", "2", "3"]];
           // return makeHTMLTable(matchedRows);
         } else if (searchParams[0] === "0" && searchParams[1] === "hi") {
