@@ -23,7 +23,7 @@ interface REPLInputProps {
 /**
  * defines a function for command use
  * a function takes an array of strings as arguments (representing parameters) and returns a result
- * @interface
+ * @interface all functions implement
  * @param args {string[]} : array of strings, paramters for a command (ie. args for load_file
  * is the filepath)
  * @returns result of running a command, varies by command
@@ -45,8 +45,9 @@ export interface REPLFunction {
  *  - commandString: string, command entered by user
  *  - file_history: Map<string, string[][]>, map storing history of files loaded and their respective datasets
  *  - loaded_file: string, current loaded file's filepath, updated each time a new file is loaded by the user
+ *  - commandMap: Map<string, REPLFunction>, map of commands
  *
- * @returns FINISH THIS
+ * @returns rendered input interface for REPL
  */
 export function REPLInput(props: REPLInputProps) {
   const [commandString, setCommandString] = useState<string>("");
@@ -56,6 +57,12 @@ export function REPLInput(props: REPLInputProps) {
   const [loaded_file, setLoadFile] = useState<string>("");
   const commandMap: Map<string, REPLFunction> = new Map();
 
+  /**
+   * adds commands to the commandMap
+   * 
+   * @param commandName {string}: name of command
+   * @param commandFunc {REPLFunction}: function that gets executed when command is called
+   */
   function addCommand(commandName: string, commandFunc: REPLFunction) {
     commandMap.set(commandName, commandFunc);
   }
@@ -82,6 +89,7 @@ export function REPLInput(props: REPLInputProps) {
   const loadCommand: REPLFunction = (args: Array<string>) => {
     const filepath = args[0];
     let data = getMockedData(filepath);
+    mapFiles(filepath);
     if (filepath.length === 0) {
       return "No filepath given.";
     }
@@ -242,8 +250,8 @@ export function REPLInput(props: REPLInputProps) {
 
   /**
    * Helper function for search command
-   * @param searchParams
-   * @returns
+   * @param searchParams search identifier and/or value
+   * @returns result of search
    */
   function search(searchParams: string[]): string[][] {
     if (loaded_file === "file1") {
