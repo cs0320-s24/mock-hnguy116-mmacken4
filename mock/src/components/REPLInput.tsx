@@ -264,8 +264,7 @@ export function REPLInput(props: REPLInputProps) {
           // return makeHTMLTable(matchedRows);
         } else if (searchParams[0] === "0" && searchParams[1] === "hi") {
           //search for non-exist val w index
-          return [[]];
-          // return "Value does not exist in file"
+          return [["Value does not exist in file"]];
         } else if (searchParams[0] === "col3" && searchParams[1] === "6") {
           //search for val w col name
           return [
@@ -313,7 +312,7 @@ export function REPLInput(props: REPLInputProps) {
         return [["boo"]];
       }
     }
-    return [[]];
+    return [["No rows found!"]];
   }
 
   /**
