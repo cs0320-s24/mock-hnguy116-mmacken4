@@ -1,4 +1,4 @@
-// mockedJson.ts
+// Contains mocked data
 
 // Mocked data for file1
 export const file1 = [
