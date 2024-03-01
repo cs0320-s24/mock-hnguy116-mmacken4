@@ -54,7 +54,7 @@ export function REPLInput(props: REPLInputProps) {
     }
   }
 
-  function commandOutput(commandString: string): string {
+  function commandOutput(commandString: string): any {
     let newString = commandString.trim().toLowerCase();
     // *** MODE COMMAND ***
 
@@ -88,7 +88,7 @@ export function REPLInput(props: REPLInputProps) {
     } else if (newString === "view") {
       if (!(loaded_file === "")) {
         //return loaded_file;
-        //return makeHTMLTable(loaded_file);
+        return makeHTMLTable(loaded_file);
       } else {
         return "No file loaded!";
       }
@@ -126,30 +126,19 @@ export function REPLInput(props: REPLInputProps) {
     }
   }
 
-  function makeHTMLTable(filePath: string): string {
+  function makeHTMLTable(filePath: string) {
     let data = getMockedData(filePath);
-    let tableHtml = "<table>\n<thead>\n<tr>\n";
-
-    // Use the first row for column headers
-    data[0].forEach((header) => {
-      tableHtml += `<th>${header}</th>\n`;
-    });
-
-    tableHtml += "</tr>\n</thead>\n<tbody>\n";
-
-    // Iterate over the remaining rows for the table body
-    for (let i = 1; i < data.length; i++) {
-      tableHtml += "<tr>\n";
-      data[i].forEach((cell) => {
-        tableHtml += `<td>${cell}</td>\n`;
-      });
-      tableHtml += "</tr>\n";
-    }
-
-    // Close the table body and the table
-    tableHtml += "</tbody>\n</table>";
-
-    return tableHtml;
+    return (
+      <table className="html-table" aria-label="html-table">
+        {data.map((command, index) => (
+          <tr key={index}>
+            {command.map((command2, element) => (
+              <td key={element}>{command2}</td>
+            ))}
+          </tr>
+        ))}
+      </table>
+    );
   }
 
   function search(searchParams: Array<String>): Array<Array<string>> {
