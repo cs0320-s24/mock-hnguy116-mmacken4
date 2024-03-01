@@ -4,8 +4,8 @@ import { ControlledInput } from "./ControlledInput";
 
 interface REPLInputProps {
   // TODO: Fill this with desired props... Maybe something to keep track of the submitted commands
-  history: string[]; //push every command into this history array
-  setHistory: Dispatch<SetStateAction<string[]>>; //use it to maintain state of list
+  history: any[]; //push every command into this history array
+  setHistory: Dispatch<SetStateAction<any[]>>; //use it to maintain state of list
   verbose: boolean;
   setVerbose: Dispatch<SetStateAction<boolean>>;
 }
@@ -22,26 +22,11 @@ export function REPLInput(props: REPLInputProps) {
   //const [html_Table, setHTMLTable] = useState<string>("");
   const [loaded_file, setLoadFile] = useState<string>("");
 
-  // TODO WITH TA: build a handleSubmit function called in button onClick
-  // TODO: Once it increments, try to make it push commands... Note that you can use the `...` spread syntax to copy what was there before
-  // add to it with new commands.
-  /**
-   * We suggest breaking down this component into smaller components, think about the individual pieces
-   * of the REPL and how they connect to each other...
-   */
   function handleSubmit(commandString: string) {
-    //setCount(count + 1);
     if (props.verbose === false) {
       props.setHistory([...props.history, commandOutput(commandString)]);
     } else {
-      props.setHistory([
-        ...props.history,
-        "Command: " +
-          commandString +
-          "\n" +
-          "Output: " +
-          commandOutput(commandString),
-      ]);
+      props.setHistory([...props.history, verboseOutput(commandString)]);
     }
     setCommandString("");
   }
@@ -54,10 +39,28 @@ export function REPLInput(props: REPLInputProps) {
     }
   }
 
+  function verboseOutput(commandString: string) {
+    if (typeof commandOutput(commandString) === "string") {
+      return (
+        "Command: " +
+        commandString +
+        "\n" +
+        "Output: " +
+        commandOutput(commandString)
+      );
+    } else {
+      let myOutput = [];
+      myOutput.push("Command: " + commandString + " ");
+      myOutput.push("Output: ");
+      myOutput.push(commandOutput(commandString));
+      return myOutput;
+    }
+  }
+
   function commandOutput(commandString: string): any {
     let newString = commandString.trim().toLowerCase();
-    // *** MODE COMMAND ***
 
+    // *** MODE COMMAND ***
     if (newString.includes("mode") && newString.length === 4) {
       if (props.verbose === false) {
         return "Brief mode!";
@@ -137,21 +140,41 @@ export function REPLInput(props: REPLInputProps) {
     );
   }
 
+  // let searchParams = commandString.substring(7).trim();
+  // let searchArray = searchParams.split(" ");
+  // searchArray[0] = searchArray[0].trim();
+  // searchArray[1] = searchArray[1].trim();
+  // if (searchArray.length === 0) {
+  //   return "No search parameters given!";
+  // } else if (searchArray.length > 2) {
+  //   return "Too many search parameters given!";
+  // }
+  // let matchedRows = search(searchArray);
+  // if (matchedRows.length === 0) {
+  //   return "No rows found!";
+  // }
+  // return makeHTMLTable(matchedRows);
+
   function search(searchParams: string[]): string[][] {
     if (loaded_file === "file1") {
       if (searchParams.length === 2) {
         if (searchParams[0] === "0" && searchParams[1] === "1") {
           //search for val w index
           return [["1", "2", "3"]];
+          // let matchedRows = [["1", "2", "3"]];
+          // return makeHTMLTable(matchedRows);
         } else if (searchParams[0] === "0" && searchParams[1] === "hi") {
           //search for non-exist val w index
           return [[]];
+          // return "Value does not exist in file"
         } else if (searchParams[0] === "col3" && searchParams[1] === "6") {
           //search for val w col name
           return [
             ["4", "1", "6"],
             ["4", "2", "6"],
           ];
+          // let matchedRows = [["4", "1", "6"],["4", "2", "6"]];
+          // return makeHTMLTable(matchedRows);
         }
       }
     } else if (loaded_file === "file2") {
@@ -162,6 +185,8 @@ export function REPLInput(props: REPLInputProps) {
             ["beep", "boop", "beep"],
             ["boo", "boop", "bee"],
           ];
+          // let matchedRows = [["beep", "boop", "beep"],["boo", "boop", "bee"]];
+          // return makeHTMLTable(matchedRows);
         }
       } else {
         if (searchParams[0] === "ooo") {
@@ -170,26 +195,33 @@ export function REPLInput(props: REPLInputProps) {
             ["ooo", "cee", "see"],
             ["beep", "ooo", "bloo"],
           ];
+          // let matchedRows = [["ooo", "cee", "see"],["beep", "ooo", "bloo"]];
+          // return makeHTMLTable(matchedRows);
         }
       }
     } else if (loaded_file === "file4") {
       if (searchParams.length === 2) {
         if (searchParams[0] === "6000" && searchParams[1] === "RI") {
           //search w non-existent index
-          return [[]];
+          return [["Non-existent index!"]];
+          // return "add something here"
         } else if (searchParams[0] === "6000" && searchParams[1] === "eek") {
           //search w non-existent index and val
           return [[]];
+          // return "Value does not exist in file";
         }
       } else if (searchParams[0] === "eek") {
         //search w non existent val
         return [[]];
+        // return "Value does not exist in file";
       }
     } else if (loaded_file === "mtfile") {
       //any search on empty file
       return [[]];
+      // return "Value not found";
     }
     return [[]];
+    // return "Value not found";
   }
 
   function getMockedData(filePath: string): string[][] {
