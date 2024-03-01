@@ -50,3 +50,6 @@ export const file4 = [
     "4%",
   ],
 ];
+
+// Mocked data for file5
+export const file5 = [["beep"], ["boo"], ["ooo"], ["fdgfd"], ["beep"]];

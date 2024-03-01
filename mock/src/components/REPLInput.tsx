@@ -1,7 +1,7 @@
 import { Dispatch, SetStateAction, useState } from "react";
 import "../styles/main.css";
 import { ControlledInput } from "./ControlledInput";
-import { file1, file2, mtfile, file4 } from "./MockedData";
+import { file1, file2, mtfile, file4, file5 } from "./MockedData";
 
 /**
  * props for REPLInput component
@@ -308,12 +308,16 @@ export function REPLInput(props: REPLInputProps) {
     } else if (loaded_file === "mtfile") {
       //any search on empty file
       return [["File is empty!"]];
+    } else if (loaded_file === "file5") {
+      if (searchParams[0] === "boo") {
+        return [["boo"]];
+      }
     }
     return [[]];
   }
 
   /**
-   * Function that represents mocked data files
+   * Function that returns mocked data
    * @param filePath mocked file to retrieve
    * @returns string[][] representing mock data
    */
@@ -326,6 +330,8 @@ export function REPLInput(props: REPLInputProps) {
       return mtfile;
     } else if (filePath === "file4") {
       return file4;
+    } else if (filePath === "file5") {
+      return file5;
     } else {
       return [["File not found!"]];
     }
