@@ -182,11 +182,11 @@ export function REPLInput(props: REPLInputProps) {
   }
 
   /**
-   * Defines how to
+   * Defines output to user when in verbose mode
    * @param commandString user input
    * @param commandFunc command extracted from user input
    * @param args arguments given after command string
-   * @returns
+   * @returns output to display to user
    */
   function verboseOutput(
     commandString: string,
@@ -206,6 +206,11 @@ export function REPLInput(props: REPLInputProps) {
     }
   }
 
+  /**
+   * Add loadedfiles to the map
+   * @param filePath to add
+   * @returns success message
+   */
   function mapFiles(filePath: string) {
     const dataset = getMockedData(filePath);
 
@@ -216,6 +221,11 @@ export function REPLInput(props: REPLInputProps) {
     }
   }
 
+  /**
+   * Handles creating an html table to display to users
+   * @param data string[][] from which to create the table
+   * @returns JSX element html table
+   */
   function makeHTMLTable(data: string[][]) {
     return (
       <table className="html-table" aria-label="html-table">
@@ -230,6 +240,11 @@ export function REPLInput(props: REPLInputProps) {
     );
   }
 
+  /**
+   * Helper function for search command
+   * @param searchParams
+   * @returns
+   */
   function search(searchParams: string[]): string[][] {
     if (loaded_file === "file1") {
       if (searchParams.length === 2) {
@@ -288,6 +303,11 @@ export function REPLInput(props: REPLInputProps) {
     return [[]];
   }
 
+  /**
+   * Function that represents mocked data files
+   * @param filePath mocked file to retrieve
+   * @returns string[][] representing mock data
+   */
   function getMockedData(filePath: string): string[][] {
     const file1 = [
       ["col1", "col2", "col3"],
@@ -346,6 +366,9 @@ export function REPLInput(props: REPLInputProps) {
     }
   }
 
+  /**
+   * Retrieves user input
+   */
   return (
     <div className="repl-input">
       <fieldset>

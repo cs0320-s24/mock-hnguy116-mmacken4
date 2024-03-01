@@ -63,10 +63,98 @@ test("on page load, i see a button", async ({ page }) => {
 });
 
 test("after I click the button, my command gets pushed", async ({ page }) => {
-  // TODO: Fill this in to test your button push functionality!
   await page.getByLabel("Login").click();
   await page.getByLabel("Command input").click();
   await page.getByLabel("Command input").fill("hi");
   await page.getByLabel("Submit").click();
   await expect(page.getByText("Command not found!")).toBeVisible();
+});
+
+test("after I input text, the command line empties", async ({ page }) => {
+  await page.getByLabel("Login").click();
+  await page.getByLabel("Command input").click();
+  await page.getByLabel("Command input").fill("hi");
+  await page.getByLabel("Submit").click();
+  await expect(page.getByLabel("Command input")).toBeEmpty;
+});
+
+test("after I input load_file, repl-history has value", async ({ page }) => {
+  await page.getByLabel("Login").click();
+  await page.getByLabel("Command input").click();
+  await page.getByLabel("Command input").fill("hi");
+  await page.getByLabel("Submit").click();
+  await expect(page.getByLabel("repl-history")).toHaveValue;
+});
+
+test("after I input load_file and view, an html table is displayed", async ({
+  page,
+}) => {
+  await page.getByLabel("Login").click();
+  await page.getByLabel("Command input").click();
+  await page.getByLabel("Command input").fill("load_file file1");
+  await page.getByLabel("Submit").click();
+  await page.getByLabel("Command input").click();
+  await page.getByLabel("Command input").fill("view");
+  await page.getByLabel("Submit").click();
+  await expect(page.getByLabel("html-table")).toHaveValue;
+});
+
+test("repl-history is empty when no commands have occurred", async ({
+  page,
+}) => {
+  await page.getByLabel("Login").click();
+  await page.getByLabel("Command input").click();
+  await page.getByLabel("Command input").fill("hi");
+  await page.getByLabel("Submit").click();
+  await expect(page.getByLabel("Command input")).toBeEmpty;
+});
+
+// test("load does not work when the user is not logged in", async ({ page }) => {
+//   await expect(page.getByLabel("Command input")).not.toBeVisible();
+//   await expect(page.getByLabel("Submit")).not.toBeVisible();
+//   await expect(page.getByLabel("Command input").fill("test command")).toBeTimeout(1);
+//   await page.getByLabel("Submit").click();
+//   await expect(page.getByLabel("repl-history")).toBeEmpty();
+// });
+
+test("after load_file and view, an html table has the right vals", async ({
+  page,
+}) => {
+  await page.getByLabel("Login").click();
+  await page.getByLabel("Command input").click();
+  await page.getByLabel("Command input").fill("load_file file1");
+  await page.getByLabel("Submit").click();
+  await page.getByLabel("Command input").click();
+  await page.getByLabel("Command input").fill("view");
+  await page.getByLabel("Submit").click();
+  const tableContent = await page.$eval(
+    ".html-table",
+    (table) => table.innerHTML
+  );
+  expect(tableContent).toContain("<td>col1</td>");
+  expect(tableContent).toContain("<td>col2</td>");
+  expect(tableContent).toContain("<td>col3</td>");
+  expect(tableContent).toContain("<td>1</td>");
+  expect(tableContent).toContain("<td>2</td>");
+  expect(tableContent).toContain("<td>3</td>");
+  expect(tableContent).toContain("<td>4</td>");
+  expect(tableContent).toContain("<td>1</td>");
+  expect(tableContent).toContain("<td>6</td>");
+  expect(tableContent).toContain("<td>7</td>");
+  expect(tableContent).toContain("<td>8</td>");
+  expect(tableContent).toContain("<td>9</td>");
+  expect(tableContent).toContain("<td>4</td>");
+  expect(tableContent).toContain("<td>2</td>");
+  expect(tableContent).toContain("<td>6</td>");
+});
+
+test("mode changes the output", async ({ page }) => {
+  await page.getByLabel("Login").click();
+  await page.getByLabel("Command input").click();
+  await page.getByLabel("Command input").fill("mode");
+  await page.getByLabel("Submit").click();
+  await page.getByLabel("Command input").click();
+  await page.getByLabel("Submit").click();
+  let output = await page.textContent(".output");
+  expect(output).toContain("Command: mode Output: Verbose Mode!");
 });
