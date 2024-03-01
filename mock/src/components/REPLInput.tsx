@@ -1,6 +1,7 @@
 import { Dispatch, SetStateAction, useState } from "react";
 import "../styles/main.css";
 import { ControlledInput } from "./ControlledInput";
+import { file1, file2, mtfile, file4 } from "./MockedData";
 
 /**
  * props for REPLInput component
@@ -59,7 +60,7 @@ export function REPLInput(props: REPLInputProps) {
 
   /**
    * adds commands to the commandMap
-   * 
+   *
    * @param commandName {string}: name of command
    * @param commandFunc {REPLFunction}: function that gets executed when command is called
    */
@@ -317,50 +318,6 @@ export function REPLInput(props: REPLInputProps) {
    * @returns string[][] representing mock data
    */
   function getMockedData(filePath: string): string[][] {
-    const file1 = [
-      ["col1", "col2", "col3"],
-      ["1", "2", "3"],
-      ["4", "1", "6"],
-      ["7", "8", "9"],
-      ["4", "2", "6"],
-    ];
-    const file2 = [
-      ["beep", "boop", "beep"],
-      ["boo", "boop", "bee"],
-      ["ooo", "cee", "see"],
-      ["fdgfd", "gdfgdf", "gdgdf"],
-      ["beep", "ooo", "bloo"],
-    ];
-    const mtfile = [[]];
-    const file4 = [
-      [
-        "State",
-        "RI",
-        "Data Type",
-        "Native American/American Indian",
-        "Average Weekly Earnings",
-        " $471.07 ",
-        "Number of Workers",
-        "Earnings Disparity",
-        " $0.45 ",
-        "Employed Percent",
-        "0%",
-      ],
-      [
-        "State",
-        "RI",
-        "Data Type",
-        "Asian-Pacific Islander",
-        "Average Weekly Earnings",
-        " $1,080.09 ",
-        "Number of Workers",
-        "Earnings Disparity",
-        " $1.02 ",
-        "Employed Percent",
-        "4%",
-      ],
-    ];
-
     if (filePath === "file1") {
       return file1;
     } else if (filePath === "file2") {
