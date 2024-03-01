@@ -2,6 +2,17 @@ import { Dispatch, SetStateAction, useState } from "react";
 import "../styles/main.css";
 import { ControlledInput } from "./ControlledInput";
 
+/**
+ * props for REPLInput component
+ *
+ * @interface
+ * @property history {any[]}: array that stores the command history submitted to REPL
+ * @property setHistory {Dispatch<SetStateAction<any[]>>}: function that updates the state of 'history' array
+ * @property verbose {boolean}: boolean that indicates the output mode
+ *              - false = brief mode, only command output returned
+ *              - true = verbose mode, command and command output returned in format Command: ___ Output: ___
+ * @property setVerbose {Dispatch<SetStateAction<boolean>>}: function that updates the state of 'verbose'
+ */
 interface REPLInputProps {
   history: any[]; //push every command into this history array
   setHistory: Dispatch<SetStateAction<any[]>>; //use it to maintain state of list
@@ -9,48 +20,36 @@ interface REPLInputProps {
   setVerbose: Dispatch<SetStateAction<boolean>>;
 }
 
-// 1. make map: string (command) - > function
-// 2. pass function as argument to command handler (which calls the command)
-
-// var command = commandProcessing.get(commandName);
-
-// var response = command(argumentsArray);
-
-// const commandList: Map<string, REPLFunction> = new Map();
-
+/**
+ * defines a function for command use
+ * a function takes an array of strings as arguments (representing parameters) and returns a result
+ * @interface
+ * @param args {string[]} : array of strings, paramters for a command (ie. args for load_file
+ * is the filepath)
+ * @returns result of running a command, varies by command
+ * */
 export interface REPLFunction {
   (args: Array<string>): any;
 }
 
-// function addCommand(commandName: string, commandFunc: REPLFunction) {
-//   commandList.set(commandName, commandFunc);
-// }
-
-// const loadFileCommand: REPLFunction = (Array<string>) any => {
-//   let newString = commandString.trim().toLowerCase();
-//   let file_path = commandString.slice(10).trim().toLowerCase();
-//       let data = getMockedData(file_path);
-//       if (file_path.length === 0) {
-//         return "No file path given!";
-//       }
-//       if (data.length === 1 && data[0][0] === "File not found!") {
-//         return "File not found!";
-//       } else {
-//         setLoadFile(file_path);
-//         mapFiles(file_path);
-//         return "File loaded successfully!";
-//       }
-// }
-
-// addCommand("load_file", loadFileCommand);
-
-// You can use a custom interface or explicit fields or both! An alternative to the current function header might be:
-// REPLInput(history: string[], setHistory: Dispatch<SetStateAction<string[]>>)
+/**
+ * input interface for REPL
+ * users enter commands, manages command history, executes commands
+ * @param props {REPLInputProps}: props passed to REPLInput component
+ *                              - history
+ *                              - setHistory
+ *                              - verbose
+ *                              - setVerbose
+ *
+ * State:
+ *  - commandString: string, command entered by user
+ *  - file_history: Map<string, string[][]>, map storing history of files loaded and their respective datasets
+ *  - loaded_file: string, current loaded file's filepath, updated each time a new file is loaded by the user
+ *
+ * @returns FINISH THIS
+ */
 export function REPLInput(props: REPLInputProps) {
-  // Remember: let React manage state in your webapp.
-  // Manages the contents of the input box
   const [commandString, setCommandString] = useState<string>("");
-  //const [count, setCount] = useState<number>(0);
   const [file_history, setFileHistory] = useState<Map<string, string[][]>>(
     new Map()
   );
@@ -61,8 +60,12 @@ export function REPLInput(props: REPLInputProps) {
     commandMap.set(commandName, commandFunc);
   }
 
+  /**
+   * Mode command function: defines output for mode command
+   * @param args the arguments input after mode command
+   * @returns string to output to user
+   */
   const modeCommand: REPLFunction = (args: Array<string>) => {
-    //mode command is called and mode is switched
     if (props.verbose === false) {
       return "Brief mode!";
     } else if (props.verbose === true) {
@@ -70,19 +73,13 @@ export function REPLInput(props: REPLInputProps) {
     }
   };
 
+  /**
+   * Load command function: defines behavior for load command,
+   * setting the loaded file w the current file path
+   * @param args the arguments input after load command
+   * @returns string to output to user
+   */
   const loadCommand: REPLFunction = (args: Array<string>) => {
-    // let file_path = commandString.slice(10).trim().toLowerCase();
-    // let data = getMockedData(file_path);
-    // if (file_path.length === 0) {
-    //   return "No file path given!";
-    // }
-    // if (data.length === 1 && data[0][0] === "File not found!") {
-    //   return "File not found!";
-    // } else {
-    //   setLoadFile(file_path);
-    //   mapFiles(file_path);
-    //   return "File loaded successfully!";
-    // }
     const filepath = args[0];
     let data = getMockedData(filepath);
     if (filepath.length === 0) {
@@ -92,20 +89,31 @@ export function REPLInput(props: REPLInputProps) {
       return "File not found!";
     } else {
       setLoadFile(filepath);
-      //return filepath; use this to check args
       return "File loaded successfully!";
     }
   };
 
+  /**
+   * View command func: defines behavior for view command,
+   * making an html table from the file or returning error message
+   * @param args the arguments input after view command
+   * @returns html table or string to output to user
+   */
   const viewCommand: REPLFunction = (args: Array<string>) => {
     if (!(loaded_file === "")) {
       let data = getMockedData(loaded_file);
       return makeHTMLTable(data);
     } else {
-      return "No file loaded!";
+      return "File not found!";
     }
   };
 
+  /**
+   * Search command func: defines behavior for search command,
+   * searching a file w identifier and val or returning error message
+   * @param args the arguments input after search command
+   * @returns html table or string to output to user
+   */
   const searchCommand: REPLFunction = (args: Array<string>) => {
     const columnID = args[0];
     const value = args[1];
@@ -130,11 +138,18 @@ export function REPLInput(props: REPLInputProps) {
     }
   };
 
+  // add commands to the command map
   addCommand("mode", modeCommand);
   addCommand("load_file", loadCommand);
   addCommand("view", viewCommand);
   addCommand("search", searchCommand);
 
+  /**
+   * Handles program functionality after the user inputs a string,
+   * retrieving the command function from the map and returning
+   * output to the user
+   * @param commandString user input
+   */
   function handleSubmit(commandString: string) {
     if (commandString.length > 0) {
       const args = commandString.split(" ");
@@ -156,6 +171,8 @@ export function REPLInput(props: REPLInputProps) {
     setCommandString("");
   }
   commandString.trim().toLowerCase();
+
+  //update mode
   if (commandString.includes("mode") && commandString.length === 4) {
     if (props.verbose === false) {
       props.setVerbose(true);
@@ -164,6 +181,13 @@ export function REPLInput(props: REPLInputProps) {
     }
   }
 
+  /**
+   * Defines how to
+   * @param commandString user input
+   * @param commandFunc command extracted from user input
+   * @param args arguments given after command string
+   * @returns
+   */
   function verboseOutput(
     commandString: string,
     commandFunc: REPLFunction,
@@ -181,65 +205,6 @@ export function REPLInput(props: REPLInputProps) {
       return myOutput;
     }
   }
-
-  // function commandOutput(commandString: string): any {
-  //   let newString = commandString.trim().toLowerCase();
-
-  //   // *** MODE COMMAND ***
-  //   // if (newString.includes("mode") && newString.length === 4) {
-  //   //   if (props.verbose === false) {
-  //   //     return "Brief mode!";
-  //   //   } else if (props.verbose === true) {
-  //   //     return "Verbose mode!";
-  //   //   }
-  //   // }
-
-  //   // *** LOAD COMMAND ***
-  //   if (newString.substring(0, 10) === "load_file ") {
-  //     let file_path = commandString.slice(10).trim().toLowerCase();
-  //     let data = getMockedData(file_path);
-  //     if (file_path.length === 0) {
-  //       return "No file path given!";
-  //     }
-  //     if (data.length === 1 && data[0][0] === "File not found!") {
-  //       return "File not found!";
-  //     } else {
-  //       setLoadFile(file_path);
-  //       mapFiles(file_path);
-  //       return "File loaded successfully!";
-  //     }
-
-  //     // *** VIEW COMMAND ***
-  //   } else if (newString === "view") {
-  //     if (!(loaded_file === "")) {
-  //       let data = getMockedData(loaded_file);
-  //       return makeHTMLTable(data);
-  //     } else {
-  //       return "No file loaded!";
-  //     }
-
-  //     // *** SEARCH COMMAND ***
-  //   } else if (newString.substring(0, 7) === "search ") {
-  //     if (loaded_file === "") {
-  //       return "No file loaded!";
-  //     }
-  //     let searchParams = commandString.substring(7).trim();
-  //     let searchArray = searchParams.split(" ");
-  //     searchArray[0] = searchArray[0].trim();
-  //     searchArray[1] = searchArray[1].trim();
-  //     if (searchArray.length === 0) {
-  //       return "No search parameters given!";
-  //     } else if (searchArray.length > 2) {
-  //       return "Too many search parameters given!";
-  //     }
-  //     let matchedRows = search(searchArray);
-  //     if (matchedRows.length === 0) {
-  //       return "No rows found!";
-  //     }
-  //     return makeHTMLTable(matchedRows);
-  //   }
-  //   return "Command not found!";
-  // }
 
   function mapFiles(filePath: string) {
     const dataset = getMockedData(filePath);
