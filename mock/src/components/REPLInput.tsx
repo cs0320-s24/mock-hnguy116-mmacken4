@@ -66,7 +66,7 @@ export function REPLInput(props: REPLInputProps) {
       }
     }
 
-    // *** LOAD, VIEW, & SEARCH CSV COMMAND ***
+    // *** LOAD COMMAND ***
     if (newString.substring(0, 10) === "load_file ") {
       let file_path = commandString.slice(10).trim().toLowerCase();
       let data = getMockedData(file_path);
@@ -77,23 +77,20 @@ export function REPLInput(props: REPLInputProps) {
         return "File not found!";
       } else {
         setLoadFile(file_path);
-        //props.setData(getMockedData(file_path));
         mapFiles(file_path);
-        console.log(file_history);
-        //setHTMLTable(makeHTMLTable(file_path));
-        //return loaded_file;
-        // return file_history.has(file_path).toString();
         return "File loaded successfully!";
       }
+
+      // *** VIEW COMMAND ***
     } else if (newString === "view") {
       if (!(loaded_file === "")) {
-        //return loaded_file;
-        return makeHTMLTable(loaded_file);
+        let data = getMockedData(loaded_file);
+        return makeHTMLTable(data);
       } else {
         return "No file loaded!";
       }
-      //return html_Table;
-      //return makeHTMLTable(loaded_file);
+
+      // *** SEARCH COMMAND ***
     } else if (newString.substring(0, 7) === "search ") {
       if (loaded_file === "") {
         return "No file loaded!";
@@ -111,13 +108,13 @@ export function REPLInput(props: REPLInputProps) {
       if (matchedRows.length === 0) {
         return "No rows found!";
       }
-      return "Matched rows: " + matchedRows.join(" ");
+      return makeHTMLTable(matchedRows);
     }
     return "Command not found!";
   }
 
   function mapFiles(filePath: string) {
-    const dataset = getMockedData(filePath); // Retrieve or mock the CSV data
+    const dataset = getMockedData(filePath);
 
     //if file doesn't exist in map, add file to map
     if (file_history.has(filePath) === false) {
@@ -126,8 +123,7 @@ export function REPLInput(props: REPLInputProps) {
     }
   }
 
-  function makeHTMLTable(filePath: string) {
-    let data = getMockedData(filePath);
+  function makeHTMLTable(data: string[][]) {
     return (
       <table className="html-table" aria-label="html-table">
         {data.map((command, index) => (
@@ -141,7 +137,7 @@ export function REPLInput(props: REPLInputProps) {
     );
   }
 
-  function search(searchParams: Array<String>): Array<Array<string>> {
+  function search(searchParams: string[]): string[][] {
     if (loaded_file === "file1") {
       if (searchParams.length === 2) {
         if (searchParams[0] === "0" && searchParams[1] === "1") {
